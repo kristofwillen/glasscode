@@ -4,7 +4,7 @@ from pathlib import Path
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        prog="sourcetrail",
+        prog="glasscode",
         description="Browse class diagrams of a Python project in the terminal.",
     )
     parser.add_argument("directory", type=Path, help="root directory of the Python project")

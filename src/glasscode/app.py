@@ -85,8 +85,8 @@ def _class_box(cls: ClassInfo, compact: bool = False) -> Panel:
     )
 
 
-class SourcetrailApp(App):
-    TITLE = "sourcetrail"
+class GlassCodeApp(App):
+    TITLE = "GlassCode"
     CSS = """
     #sidebar { width: 34; border-right: solid $primary; }
     #filter { margin: 0 0 1 0; }
@@ -287,4 +287,4 @@ class SourcetrailApp(App):
 
 
 def run(directory: Path) -> None:
-    SourcetrailApp(analyze(directory)).run()
+    GlassCodeApp(analyze(directory)).run()
