@@ -1,18 +1,18 @@
 [project]
-name = "sourcetrail"
+name = "glassscode"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [
-    { name = "Kristof Willen", email = "kristof.willen@engie.com" }
+    { name = "Kristof Willen", email = "kristof.willen@gmail.com" }
 ]
-requires-python = ">=3.15"
+requires-python = ">=3.12"
 dependencies = [
     "textual>=8.2.8",
 ]
 
 [project.scripts]
-sourcetrail = "sourcetrail:main"
+glasscode = "glasscode:main"
 
 [build-system]
 requires = ["uv_build>=0.13.6,<0.14.0"]
