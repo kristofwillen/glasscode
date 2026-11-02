@@ -1,5 +1,7 @@
 # GlassCode
 
+Glasscode offers a window on classes and their attributes/functions on Python source code, making it more transparant. Hence the name.
+
 GlassCode is a terminal-first Python project explorer that turns a codebase into a browsable class diagram. It statically analyzes a project using Python's AST, resolves class relationships, and presents them in a TUI so you can inspect inheritance, composition, and dependency links without leaving the terminal.
 
 ## What it does
@@ -50,11 +52,6 @@ For example, from this repository:
 ```bash
 uv run glasscode src
 ```
-
-Or, if installed as a package:
-
-```bash
-glasscode /home/kristof/src/python/glasscode
 ```
 
 ## Keyboard shortcuts
