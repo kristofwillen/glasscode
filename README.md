@@ -23,6 +23,7 @@ The result is a navigable, filterable class browser suitable for mentally mappin
 - class diagram view with inheritance and relation summaries
 - linked-class panel for quick navigation between related classes
 - source view showing the original code for the selected class
+- mouse-draggable dividers to adjust column widths
 - keyboard-driven filtering and navigation in the terminal
 
 ## Installation
@@ -62,6 +63,9 @@ uv run glasscode src
 - `t` — focus the class tree
 - `l` — focus the linked classes panel
 - `s` — focus the source view
+
+Drag either vertical divider with the left mouse button to resize its neighboring
+columns. The chosen proportions are kept when the terminal is resized.
 
 ## How it works
 

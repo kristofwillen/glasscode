@@ -11,7 +11,7 @@ from rich.panel import Panel
 from rich.rule import Rule
 from rich.syntax import Syntax
 from rich.text import Text
-from textual import on
+from textual import events, on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
@@ -20,6 +20,53 @@ from textual.widgets.option_list import Option
 from textual.widgets.tree import TreeNode
 
 from .analyzer import ClassInfo, Project, RelationKind, analyze
+
+
+class ColumnDivider(Static):
+    DEFAULT_CSS = """
+    ColumnDivider { width: 1; height: 1fr; background: $primary-darken-2; }
+    ColumnDivider:hover, ColumnDivider.-dragging { background: $accent; }
+    """
+
+    def __init__(self, left_id: str, right_id: str, *, id: str):
+        super().__init__(id=id)
+        self.left_id = left_id
+        self.right_id = right_id
+        self._start_x: int | None = None
+        self._widths: dict[str, int] = {}
+        self.tooltip = "Drag to resize columns"
+
+    def on_mouse_down(self, event: events.MouseDown) -> None:
+        if event.button == 1:
+            self._start_x = event.screen_x
+            self._widths = {
+                pane.id: pane.region.width
+                for pane in self.app.query(".column-pane")
+                if pane.id is not None
+            }
+            self.capture_mouse()
+            self.add_class("-dragging")
+            event.stop()
+
+    def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self._start_x is None:
+            return
+        widths = self._widths.copy()
+        total = widths[self.left_id] + widths[self.right_id]
+        minimum = min(12, total // 2)
+        left_width = widths[self.left_id] + event.screen_x - self._start_x
+        widths[self.left_id] = max(minimum, min(total - minimum, left_width))
+        widths[self.right_id] = total - widths[self.left_id]
+        for pane_id, width in widths.items():
+            self.app.query_one(f"#{pane_id}").styles.width = f"{width}fr"
+        event.stop()
+
+    def on_mouse_up(self, event: events.MouseUp) -> None:
+        if event.button == 1 and self._start_x is not None:
+            self._start_x = None
+            self.release_mouse()
+            self.remove_class("-dragging")
+            event.stop()
 
 
 def _visibility(name: str) -> str:
@@ -88,7 +135,7 @@ def _class_box(cls: ClassInfo, compact: bool = False) -> Panel:
 class GlassCodeApp(App):
     TITLE = "GlassCode"
     CSS = """
-    #sidebar { width: 34; border-right: solid $primary; }
+    #sidebar { width: 48; }
     #filter { margin: 0 0 1 0; }
     #diagram-pane { width: 1fr; }
     #diagram-scroll { height: 2fr; border: round $primary; }
@@ -115,14 +162,16 @@ class GlassCodeApp(App):
     def compose(self) -> ComposeResult:
         yield Header()
         with Horizontal():
-            with Vertical(id="sidebar"):
+            with Vertical(id="sidebar", classes="column-pane"):
                 yield Input(placeholder="Filter classes…", id="filter")
                 yield Tree(self.project.root.name, id="classes")
-            with Vertical(id="diagram-pane"):
+            yield ColumnDivider("sidebar", "diagram-pane", id="sidebar-divider")
+            with Vertical(id="diagram-pane", classes="column-pane"):
                 with VerticalScroll(id="diagram-scroll"):
                     yield Static(id="diagram")
                 yield OptionList(id="links")
-            with VerticalScroll(id="source-scroll"):
+            yield ColumnDivider("diagram-pane", "source-scroll", id="source-divider")
+            with VerticalScroll(id="source-scroll", classes="column-pane"):
                 yield Static(id="source")
         yield Footer()
 
