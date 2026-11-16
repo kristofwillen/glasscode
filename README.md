@@ -53,7 +53,6 @@ For example, from this repository:
 ```bash
 uv run glasscode src
 ```
-```
 
 ## Keyboard shortcuts
 

@@ -1,14 +1,20 @@
 [project]
 name = "glasscode"
-version = "0.1.0"
-description = "Add your description here"
+version = "1.1.0"
+description = "Browse classes, functions and atrributes in Python codebases"
 readme = "README.md"
 authors = [
     { name = "Kristof Willen", email = "kristof.willen@gmail.com" }
 ]
 requires-python = ">=3.12"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+]
 dependencies = [
-    "build>=1.6.1",
     "textual>=8.2.8",
 ]
 
@@ -18,3 +24,6 @@ glasscode = "glasscode:main"
 [build-system]
 requires = ["uv_build>=0.13.6,<0.14.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["build>=1.6.1"]
