@@ -67,7 +67,9 @@ class ClassInfo:
 
     @property
     def is_dataclass(self) -> bool:
-        return any(d.split("(")[0].split(".")[-1] == "dataclass" for d in self.decorators)
+        return any(
+            d.split("(")[0].split(".")[-1] == "dataclass" for d in self.decorators
+        )
 
 
 @dataclass
@@ -162,7 +164,9 @@ class _ModuleVisitor:
                     base = f"{pkg}.{base}" if base else pkg
                 for alias in node.names:
                     if alias.name != "*":
-                        self.imports[alias.asname or alias.name] = f"{base}.{alias.name}"
+                        self.imports[alias.asname or alias.name] = (
+                            f"{base}.{alias.name}"
+                        )
 
     def _collect_classes(self, body: list[ast.stmt], prefix: str) -> None:
         for node in body:
@@ -185,7 +189,9 @@ class _ModuleVisitor:
         )
         seen: dict[str, Attribute] = {}
 
-        def add_attr(name: str, ann: ast.expr | None, class_var: bool, refs: list[ast.expr]) -> None:
+        def add_attr(
+            name: str, ann: ast.expr | None, class_var: bool, refs: list[ast.expr]
+        ) -> None:
             if name in seen:
                 existing = seen[name]
                 if existing.annotation is None and ann is not None:
@@ -198,7 +204,12 @@ class _ModuleVisitor:
 
         for stmt in node.body:
             if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
-                add_attr(stmt.target.id, stmt.annotation, True, _annotation_refs(stmt.annotation))
+                add_attr(
+                    stmt.target.id,
+                    stmt.annotation,
+                    True,
+                    _annotation_refs(stmt.annotation),
+                )
             elif isinstance(stmt, ast.Assign):
                 for target in stmt.targets:
                     if isinstance(target, ast.Name):
@@ -258,9 +269,16 @@ def _self_assignments(fn: ast.FunctionDef | ast.AsyncFunctionDef):
                 if not is_self_attr(target):
                     continue
                 ann = None
-                if isinstance(node.value, ast.Name) and params.get(node.value.id) is not None:
+                if (
+                    isinstance(node.value, ast.Name)
+                    and params.get(node.value.id) is not None
+                ):
                     ann = params[node.value.id]
-                refs = _annotation_refs(ann) if ann is not None else _value_refs(node.value)
+                refs = (
+                    _annotation_refs(ann)
+                    if ann is not None
+                    else _value_refs(node.value)
+                )
                 yield target.attr, ann, refs
 
 
@@ -278,7 +296,9 @@ class _Resolver:
         matches = [qn for qn in self.classes if qn.endswith("." + dotted)]
         return matches[0] if len(matches) == 1 else None
 
-    def resolve(self, ref: ast.expr, visitor: _ModuleVisitor, owner: ClassInfo) -> str | None:
+    def resolve(
+        self, ref: ast.expr, visitor: _ModuleVisitor, owner: ClassInfo
+    ) -> str | None:
         dotted = _dotted(ref)
         if not dotted:
             return None
@@ -310,7 +330,9 @@ def analyze(root: Path) -> Project:
 
     for path in _iter_python_files(root):
         try:
-            tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"), str(path))
+            tree = ast.parse(
+                path.read_text(encoding="utf-8", errors="replace"), str(path)
+            )
         except (SyntaxError, ValueError) as exc:
             errors.append(f"{path.relative_to(root)}: {exc}")
             continue

@@ -86,7 +86,9 @@ def _class_box(cls: ClassInfo, compact: bool = False) -> Panel:
     if cls.is_dataclass:
         stereotypes.append("dataclass")
     stereotypes += [d for d in cls.decorators if "dataclass" not in d]
-    if any(b.split(".")[-1] in {"Enum", "IntEnum", "StrEnum", "Flag"} for b in cls.bases):
+    if any(
+        b.split(".")[-1] in {"Enum", "IntEnum", "StrEnum", "Flag"} for b in cls.bases
+    ):
         stereotypes.append("enum")
     if any(b.split(".")[-1] in {"ABC", "Protocol"} for b in cls.bases):
         stereotypes.append("abstract")
@@ -99,7 +101,9 @@ def _class_box(cls: ClassInfo, compact: bool = False) -> Panel:
     attrs = Text()
     for a in cls.attributes:
         attrs.append(f"{_visibility(a.name)} ", style="yellow")
-        attrs.append(a.name, style="underline" if a.is_class_var and a.annotation is None else "")
+        attrs.append(
+            a.name, style="underline" if a.is_class_var and a.annotation is None else ""
+        )
         if a.annotation:
             attrs.append(f": {a.annotation}", style="green")
         attrs.append("\n")
@@ -110,7 +114,11 @@ def _class_box(cls: ClassInfo, compact: bool = False) -> Panel:
     methods = Text()
     for m in cls.methods:
         methods.append(f"{_visibility(m.name)} ", style="yellow")
-        tags = [d for d in m.decorators if d in {"staticmethod", "classmethod", "property", "abstractmethod"}]
+        tags = [
+            d
+            for d in m.decorators
+            if d in {"staticmethod", "classmethod", "property", "abstractmethod"}
+        ]
         if tags:
             methods.append(f"«{', '.join(tags)}» ", style="italic magenta")
         if m.is_async:
@@ -182,7 +190,10 @@ class GlassCodeApp(App):
         self.query_one("#source-scroll").border_title = "Source"
         self._build_tree("")
         if self.project.errors:
-            self.notify(f"{len(self.project.errors)} file(s) failed to parse", severity="warning")
+            self.notify(
+                f"{len(self.project.errors)} file(s) failed to parse",
+                severity="warning",
+            )
         if not self.project.classes:
             self.query_one("#diagram", Static).update("No classes found.")
         self.query_one("#classes").focus()
@@ -194,11 +205,16 @@ class GlassCodeApp(App):
         self._class_nodes.clear()
         needle = needle.lower()
         modules: dict[str, TreeNode[str]] = {}
-        for qn, cls in sorted(self.project.classes.items(), key=lambda kv: (kv[1].module, kv[1].start_line)):
+        for qn, cls in sorted(
+            self.project.classes.items(),
+            key=lambda kv: (kv[1].module, kv[1].start_line),
+        ):
             if needle and needle not in qn.lower():
                 continue
             if cls.module not in modules:
-                modules[cls.module] = tree.root.add(Text(cls.module, style="dim"), expand=bool(needle))
+                modules[cls.module] = tree.root.add(
+                    Text(cls.module, style="dim"), expand=bool(needle)
+                )
             label = qn.removeprefix(cls.module + ".")
             self._class_nodes[qn] = modules[cls.module].add_leaf(label, data=qn)
 
@@ -264,23 +280,36 @@ class GlassCodeApp(App):
         resolved_names = {classes[qn].name for qn in resolved}
         for base in cls.bases:
             if base.split(".")[-1].split("[")[0] not in resolved_names:
-                parents.append(Panel(Text(base, style="dim italic"), expand=False, border_style="dim"))
+                parents.append(
+                    Panel(
+                        Text(base, style="dim italic"), expand=False, border_style="dim"
+                    )
+                )
         if parents:
             parts.append(Align.center(Columns(parents)))
             parts.append(Align.center(Text("△\n│", style="bold")))
 
         parts.append(Align.center(_class_box(cls)))
 
-        children = [c for c, r in self.project.incoming(cls.qualname) if r.kind is RelationKind.INHERITS]
+        children = [
+            c
+            for c, r in self.project.incoming(cls.qualname)
+            if r.kind is RelationKind.INHERITS
+        ]
         if children:
             parts.append(Align.center(Text("│\n┴", style="bold")))
-            parts.append(Align.center(Columns([_class_box(c, compact=True) for c in children])))
+            parts.append(
+                Align.center(Columns([_class_box(c, compact=True) for c in children]))
+            )
 
         composed = [r for r in cls.relations if r.kind is RelationKind.COMPOSES]
         if composed:
             parts.append(Text())
             line = Text("◆── ", style="bold")
-            line.append(", ".join(f"{classes[r.target].name} ({r.via})" for r in composed), style="cyan")
+            line.append(
+                ", ".join(f"{classes[r.target].name} ({r.via})" for r in composed),
+                style="cyan",
+            )
             parts.append(Align.center(line))
         return Group(*parts)
 
@@ -292,12 +321,54 @@ class GlassCodeApp(App):
         incoming = self.project.incoming(cls.qualname)
 
         sections: list[tuple[str, list[tuple[str, str | None]]]] = [
-            ("△ Inherits from", [(r.target, None) for r in cls.relations if r.kind is RelationKind.INHERITS]),
-            ("▽ Subclasses", [(c.qualname, None) for c, r in incoming if r.kind is RelationKind.INHERITS]),
-            ("◆ Has (attributes)", [(r.target, r.via) for r in cls.relations if r.kind is RelationKind.COMPOSES]),
-            ("◇ Held by", [(c.qualname, r.via) for c, r in incoming if r.kind is RelationKind.COMPOSES]),
-            ("┄▷ Uses (signatures)", [(r.target, r.via) for r in cls.relations if r.kind is RelationKind.DEPENDS]),
-            ("◁┄ Used by", [(c.qualname, r.via) for c, r in incoming if r.kind is RelationKind.DEPENDS]),
+            (
+                "△ Inherits from",
+                [
+                    (r.target, None)
+                    for r in cls.relations
+                    if r.kind is RelationKind.INHERITS
+                ],
+            ),
+            (
+                "▽ Subclasses",
+                [
+                    (c.qualname, None)
+                    for c, r in incoming
+                    if r.kind is RelationKind.INHERITS
+                ],
+            ),
+            (
+                "◆ Has (attributes)",
+                [
+                    (r.target, r.via)
+                    for r in cls.relations
+                    if r.kind is RelationKind.COMPOSES
+                ],
+            ),
+            (
+                "◇ Held by",
+                [
+                    (c.qualname, r.via)
+                    for c, r in incoming
+                    if r.kind is RelationKind.COMPOSES
+                ],
+            ),
+            (
+                "┄▷ Uses (signatures)",
+                [
+                    (r.target, r.via)
+                    for r in cls.relations
+                    if r.kind is RelationKind.DEPENDS
+                ],
+            ),
+            (
+                "◁┄ Used by",
+                [
+                    (c.qualname, r.via)
+                    for c, r in incoming
+                    if r.kind is RelationKind.DEPENDS
+                ],
+            ),
         ]
         options: list[Option] = []
         for heading, items in sections:
@@ -314,7 +385,9 @@ class GlassCodeApp(App):
                 options.append(Option(label))
                 self._link_targets.append(target)
         if not options:
-            options.append(Option(Text("No linked classes", style="dim"), disabled=True))
+            options.append(
+                Option(Text("No linked classes", style="dim"), disabled=True)
+            )
             self._link_targets.append(None)
         links.add_options(options)
 
@@ -331,7 +404,9 @@ class GlassCodeApp(App):
         )
         self.query_one("#source", Static).update(syntax)
         scroll = self.query_one("#source-scroll")
-        scroll.border_title = f"{cls.path.relative_to(self.project.root)}:{cls.start_line}-{cls.end_line}"
+        scroll.border_title = (
+            f"{cls.path.relative_to(self.project.root)}:{cls.start_line}-{cls.end_line}"
+        )
         scroll.scroll_home(animate=False)
 
 
