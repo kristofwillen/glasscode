@@ -115,9 +115,7 @@ def _annotation_refs(node: ast.expr | None) -> list[ast.expr]:
                 refs.extend(_annotation_refs(ast.parse(sub.value, mode="eval").body))
             except SyntaxError:
                 pass
-        elif isinstance(sub, ast.Name):
-            refs.append(sub)
-        elif isinstance(sub, ast.Attribute) and _dotted(sub):
+        elif isinstance(sub, ast.Name) or isinstance(sub, ast.Attribute) and _dotted(sub):
             refs.append(sub)
     return refs
 

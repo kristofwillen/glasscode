@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from rich.console import Group, RenderableType
 from rich.align import Align
 from rich.columns import Columns
+from rich.console import Group, RenderableType
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.syntax import Syntax
