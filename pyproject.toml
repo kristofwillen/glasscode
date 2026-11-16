@@ -27,3 +27,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = ["build>=1.6.1"]
+
+[project.urls]
+Homepage = "https://github.com/kristofwillen/glasscode"
+
